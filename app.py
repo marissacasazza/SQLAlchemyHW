@@ -60,14 +60,11 @@ def precipitation():
     # Create our session (link) from Python to the DB
     session = Session(engine)
 
-    """Return a list of all passenger names"""
-    # Query all passengers
     data = session.query(Measurement.date, Measurement.prcp)\
     .filter(Measurement.date >= '2016-08-23').order_by(Measurement.date).all()
 
     session.close()
-
-    # Convert list of tuples into normal list
+    
     data_df = list(np.ravel(data))
 
     return jsonify(data_df)
@@ -80,7 +77,6 @@ def stations():
     data = session.query(Station.station).all()
     session.close()
 
-    # Convert list of tuples into normal list
     data_df = list(np.ravel(data))
 
     return jsonify(data_df)
@@ -102,7 +98,7 @@ def start(start):
   
     data = calc_temps(start)
 
-    # Convert list of tuples into normal list
+    
     data_df = list(np.ravel(data))
 
     return jsonify(data_df)
@@ -113,7 +109,7 @@ def start_end(start, end):
   
     data = calc_temps(start, end)
 
-    # Convert list of tuples into normal list
+ 
     data_df = list(np.ravel(data))
 
     return jsonify(data_df)
