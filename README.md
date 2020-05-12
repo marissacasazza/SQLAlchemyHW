@@ -49,36 +49,71 @@ Now that you have completed your initial analysis, design a Flask API based on t
 
 ### Routes
 
-* `/`
+  #### List all routes that are available.
 
-  * Home page.
+        f"Available Routes:<br/>"
+        f"/api/v1.0/precipitation<br/>"
+        f"/api/v1.0/stations<br/>"
+        f"/api/v1.0/tobs<br/>"
+        f"/api/v1.0/&lt;start&gt;<br/>"
+        f"/api/v1.0/&lt;start&gt;/&lt;end&gt;<br/>"
 
-  * List all routes that are available.
+  #### Convert the query results to a dictionary using `date` as the key and `prcp` as the value.
+ <code> @app.route("/api/v1.0/precipitation")
+  def precipitation():
+    #Create our session (link) from Python to the DB
+    session = Session(engine)
+    data = session.query(Measurement.date, Measurement.prcp)\
+    .filter(Measurement.date >= '2016-08-23').order_by(Measurement.date).all()
+    session.close()
+    #Convert list of tuples into normal list
+    data_df = list(np.ravel(data))
+    return jsonify(data_df) </code>
+ 
+#### `/api/v1.0/stations`
 
-* `/api/v1.0/precipitation`
+ <code> @app.route("/api/v1.0/stations")
+    def stations():
+    #Create our session (link) from Python to the DB
+    session = Session(engine)
+    data = session.query(Station.station).all()
+    session.close()
+    #Convert list of tuples into normal list
+    data_df = list(np.ravel(data))
+    return jsonify(data_df)</code>
 
-  * Convert the query results to a dictionary using `date` as the key and `prcp` as the value.
+#### `/api/v1.0/tobs`
+   @app.route("/api/v1.0/tobs")
+    def tobs():
+    #Create our session (link) from Python to the DB
+    session = Session(engine)
+    data = session.query(Measurement.tobs)\
+    .filter(Measurement.station == 'USC00519281').all()
+    df2 = pd.DataFrame(data)
+    return jsonify(df2.to_dict("records"))
 
-  * Return the JSON representation of your dictionary.
-
-* `/api/v1.0/stations`
-
-  * Return a JSON list of stations from the dataset.
-
-* `/api/v1.0/tobs`
-  * Query the dates and temperature observations of the most active station for the last year of data.
+#### `/api/v1.0/<start>` and `/api/v1.0/<start>/<end>`
+<code>@app.route("/api/v1.0/<start>")
+def start(start):
+    # Create our session (link) from Python to the DB
   
-  * Return a JSON list of temperature observations (TOBS) for the previous year.
+    data = calc_temps(start)
 
-* `/api/v1.0/<start>` and `/api/v1.0/<start>/<end>`
+    # Convert list of tuples into normal list
+    data_df = list(np.ravel(data))
 
-  * Return a JSON list of the minimum temperature, the average temperature, and the max temperature for a given start or start-end range.
+    return jsonify(data_df)</code>
+<br>
+<code>@app.route("/api/v1.0/<start>/<end>")
+def start_end(start, end):
+    # Create our session (link) from Python to the DB
+  
+    data = calc_temps(start, end)
 
-  * When given the start only, calculate `TMIN`, `TAVG`, and `TMAX` for all dates greater than and equal to the start date.
+    # Convert list of tuples into normal list
+    data_df = list(np.ravel(data))
 
-  * When given the start and the end date, calculate the `TMIN`, `TAVG`, and `TMAX` for dates between the start and end date inclusive.
-
-
+    return jsonify(data_df)</code>
 - - -
 
 ## Bonus: Temperature Analysis
